@@ -68,6 +68,8 @@
         "random": "cpp",
         "regex": "cpp",
         "unordered_map": "cpp",
-        "xhash": "cpp"
+        "xhash": "cpp",
+        "functional": "cpp",
+        "numeric": "cpp"
     }
 }
