@@ -431,16 +431,14 @@ _STD wstring Crypter::FrequencyAnalysis(const std::filesystem::path _Path) {
 /// CONST GENETIC ALGORITHM
     const uint populationSize = 50;             /// Количество популяций
     const uint bestPopulation = 10;             /// Количество отбираемых особей
-    const uint generationCount = 100;           /// Количество генераций поколений
+    const uint generationCount = 150;           /// Количество генераций поколений
 /// CONST GENETIC ALGORITHM
 
     double _Efficiency = countDifference();
 
     std::vector<std::pair<std::wstring, double>> populationEfficiency(populationSize);          /// Популяция (КЛЮЧ - ЕФФЕКТИВНОСТЬ)
-    for (size_t i = 0; i < populationSize; i++) 
-        populationEfficiency[i] = std::pair(monogramsKey, _Efficiency);        
-
-    std::vector<std::pair<std::wstring, double>> tempPopulationEfficiency;  
+    for (size_t _Pos = 0; _Pos < populationSize; _Pos++) 
+        populationEfficiency[_Pos] = std::pair(monogramsKey, _Efficiency);        
 
 
     for (int _Generation = 0; _Generation < generationCount; _Generation++) {
@@ -450,25 +448,21 @@ _STD wstring Crypter::FrequencyAnalysis(const std::filesystem::path _Path) {
             [] (const std::pair<std::wstring, double> &_Left, 
                 const std::pair<std::wstring, double> &_Right) { return _Left.second < _Right.second; });
 
-        tempPopulationEfficiency.clear();
-        for (int i = 0; i < bestPopulation; i++) 
-            tempPopulationEfficiency.push_back(populationEfficiency[i]);
 
-        int descendantCount = (populationSize - bestPopulation) / bestPopulation;
-        for (int i = 0; i < bestPopulation; i++) 
-            for (int j = 0; j < descendantCount; j++) {
-                std::wstring _Key = mutate(populationEfficiency[i].first);
-                tempPopulationEfficiency.push_back(std::pair(_Key, ZERO));
+        int descendantCount = (populationSize - bestPopulation) / bestPopulation;               /// Количество потомков
+        for (size_t _Off = 0, _Pos = bestPopulation; _Off < bestPopulation; _Off++) 
+            for (size_t _As = 0; _As < descendantCount; _As++) {
+                std::wstring _Key = mutate(populationEfficiency[_Off].first);
+                populationEfficiency[_Pos++] = std::pair(_Key, ZERO);
             }
-        
+    
 
-        for (int i = bestPopulation; i < tempPopulationEfficiency.size(); i++) {
-            monogramsKey = tempPopulationEfficiency[i].first;
+        for (int i = bestPopulation; i < populationSize; i++) {
+            monogramsKey = populationEfficiency[i].first;
 
             monogramsPair.clear();
             for (size_t _Pos = 0; _Pos < monogramsKey.size(); _Pos++) 
                 monogramsPair[getIndexArray(monogramsKey[_Pos])] = std::pair(monogramsKey[_Pos], countMonogramsFile[_Pos].first);
-
 
             w_stream = std::wstringstream();
             for (const auto &x : text) 
@@ -506,12 +500,8 @@ _STD wstring Crypter::FrequencyAnalysis(const std::filesystem::path _Path) {
                         for (size_t k = 0; k < _Count; k++) 
                             _F3_Text[i][j][k] /= countTrigrams;
 
-            _Efficiency = countDifference();
-
-            tempPopulationEfficiency[i].second = _Efficiency;
+            populationEfficiency[i].second = countDifference();
         }
-        populationEfficiency = tempPopulationEfficiency;
-
     }
 
     std::sort(populationEfficiency.begin(), populationEfficiency.end(),                         /// Сортируем вектор по эффективности
